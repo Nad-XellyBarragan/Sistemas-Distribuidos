@@ -1,0 +1,33 @@
+- Dependencias del sistema para distribuciones de debian
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip python3-full git
+
+- Creación de archivos tipo torrent
+python make_torrent.py <IP_TRACKER> <PUERTO_TRACKER> <NOMBRE_ARCHIVO>
+
+- Crear entorno virtual he instalar depencias en python
+cd proyectoFinal
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install grpcio grpcio-tools
+
+Para verificar: python -c "import grpc, grpc_tools; print('OK: grpc instalado')"
+
+- Generar código gRPC a partir de los proto (stubs)
+python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/tracker.proto
+python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/peer.proto
+
+Para verificar: ls -1 | egrep "tracker_pb2|tracker_pb2_grpc|peer_pb2|peer_pb2_grpc"
+
+- Para correr el programa
+  
+  Tracker
+  cd proyectoFinal
+  source .venv/bin/activate
+  python tracker_server.py
+
+  Peer
+  cd proyectoFinal
+  source .venv/bin/activate
+  python peer.py --bind 0.0.0.0:6001

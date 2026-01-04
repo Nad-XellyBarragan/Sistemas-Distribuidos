@@ -1,0 +1,17 @@
+syntax = "proto3";
+package peer;
+
+service Peer {
+  rpc GetPiece(GetPieceRequest) returns (stream PieceData);
+  rpc GetHavePieces(GetHavePiecesRequest) returns (GetHavePiecesResponse);
+}
+
+message GetPieceRequest {
+  string info_hash = 1;   // torrent_id
+  int32 piece_index = 2;
+}
+
+message PieceData { bytes data = 1; }
+
+message GetHavePiecesRequest { string info_hash = 1; }
+message GetHavePiecesResponse { repeated int32 have = 1; }

@@ -1,0 +1,92 @@
+syntax = "proto3";
+package tracker;
+
+service Tracker {
+  // Registro general del peer (no depende de torrents)
+  rpc Hello(HelloRequest) returns (HelloResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // Catálogo de torrents en el tracker
+  rpc PublishTorrent(PublishTorrentRequest) returns (PublishTorrentResponse);
+  rpc ListTorrents(ListTorrentsRequest) returns (ListTorrentsResponse);
+  rpc GetTorrent(GetTorrentRequest) returns (GetTorrentResponse);
+
+  // Lo de antes (por torrent)
+  rpc Announce(AnnounceRequest) returns (AnnounceResponse);
+  rpc GetPeers(GetPeersRequest) returns (GetPeersResponse);
+  rpc UpdateProgress(UpdateProgressRequest) returns (UpdateProgressResponse);
+  rpc GetProgress(GetProgressRequest) returns (GetProgressResponse);
+}
+
+message PeerInfo {
+  string peer_id = 1;
+  string ip = 2;
+  int32 port = 3;
+}
+
+message HelloRequest { PeerInfo peer = 1; }
+message HelloResponse { bool ok = 1; }
+
+message HeartbeatRequest { string peer_id = 1; }
+message HeartbeatResponse { bool ok = 1; }
+
+message TorrentEntry {
+  string info_hash = 1;
+  string torrent_name = 2;   // ej: video.torrent.json
+  string file_name = 3;      // ej: video.mp4
+  int32 pieces = 4;
+  int32 last_piece = 5;
+}
+
+message PublishTorrentRequest {
+  string info_hash = 1;
+  TorrentEntry meta = 2;
+  bytes torrent_json = 3;    // el contenido completo del .torrent.json
+}
+
+message PublishTorrentResponse { bool ok = 1; }
+
+message ListTorrentsRequest {}
+message ListTorrentsResponse { repeated TorrentEntry torrents = 1; }
+
+message GetTorrentRequest { string info_hash = 1; }
+message GetTorrentResponse { bytes torrent_json = 1; }
+
+message AnnounceRequest {
+  string info_hash = 1;
+  PeerInfo peer = 2;
+  bool is_seeder = 3;
+  int32 total_pieces = 4;
+  string torrent_name = 5;
+}
+
+message AnnounceResponse { bool ok = 1; }
+
+message GetPeersRequest { string info_hash = 1; }
+message GetPeersResponse { repeated PeerInfo peers = 1; }
+
+message UpdateProgressRequest {
+  string info_hash = 1;
+  string peer_id = 2;
+  int32 pieces_have = 3;
+  int64 bytes_downloaded = 4;
+  string status = 5; // "leecher" | "seeder"
+}
+
+message UpdateProgressResponse { bool ok = 1; }
+
+message GetProgressRequest { string info_hash = 1; }
+
+message PeerProgress {
+  string peer_id = 1;
+  string ip = 2;
+  int32 port = 3;
+  int32 pieces_have = 4;
+  int32 total_pieces = 5;
+  int64 bytes_downloaded = 6;
+  string status = 7;
+  bool online = 8;
+  int64 last_seen_unix = 9;
+}
+
+message GetProgressResponse { repeated PeerProgress progress = 1; }
