@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package bittorrent;
+
+message PeerId {
+  // ID estable del peer (para recuperación/reintegración aunque cambie IP)
+  string peer_uuid = 1;
+
+  // Info de red actual
+  string ip = 2;
+  int32 port = 3;
+}
+
+message FileProgress {
+  string infohash = 1;
+  string name = 2;
+
+  int64 size_bytes = 3;
+  int32 total_pieces = 4;
+
+  int32 have_pieces = 5;
+  double percent = 6;
+
+  // METADATA para descargar sin .torrent local
+  int32 piece_length = 7;
+  bytes pieces_blob = 8; // SHA1 concatenado: 20 * total_pieces bytes
+}
+
+message AnnounceRequest {
+  PeerId peer = 1;
+  repeated FileProgress files = 2;
+}
+
+message AnnounceResponse {
+  bool ok = 1;
+}
+
+message HeartbeatRequest {
+  PeerId peer = 1;
+}
+
+message HeartbeatResponse {
+  bool ok = 1;
+}
+
+message UpdateProgressRequest {
+  PeerId peer = 1;
+  FileProgress file = 2;
+}
+
+message UpdateProgressResponse {
+  bool ok = 1;
+}
+
+message ListFilesRequest {}
+
+message FileEntry {
+  string infohash = 1;
+  string name = 2;
+  int64 size_bytes = 3;
+  int32 total_pieces = 4;
+
+  int32 servables = 5; // peers ONLINE con percent >= 0.20
+  int32 seeders = 6;   // peers ONLINE con percent >= 1.0
+}
+
+message ListFilesResponse {
+  repeated FileEntry files = 1;
+}
+
+message GetPeersForFileRequest {
+  string infohash = 1;
+}
+
+message GetPeersForFileResponse {
+  repeated PeerId peers = 1;
+}
+
+message GetMetaRequest {
+  string infohash = 1;
+}
+
+message GetMetaResponse {
+  string infohash = 1;
+  string name = 2;
+  int64 size_bytes = 3;
+  int32 piece_length = 4;
+  int32 total_pieces = 5;
+  bytes pieces_blob = 6; // 20*total_pieces bytes
+}
+
+service Tracker {
+  rpc Announce(AnnounceRequest) returns (AnnounceResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  rpc UpdateProgress(UpdateProgressRequest) returns (UpdateProgressResponse);
+
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+  rpc GetPeersForFile(GetPeersForFileRequest) returns (GetPeersForFileResponse);
+  rpc GetMeta(GetMetaRequest) returns (GetMetaResponse);
+}

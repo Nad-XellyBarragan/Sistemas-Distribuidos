@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package bittorrent;
+
+message GetFileStatusRequest {
+  string infohash = 1;
+}
+
+message GetFileStatusResponse {
+  string infohash = 1;
+  int32 total_pieces = 2;
+  repeated int32 have_piece_indices = 3;
+}
+
+message DownloadPieceRequest {
+  string infohash = 1;
+  int32 piece_index = 2;
+}
+
+message DownloadPieceResponse {
+  bytes data = 1;
+}
+
+service PeerFileService {
+  rpc GetFileStatus(GetFileStatusRequest) returns (GetFileStatusResponse);
+  rpc DownloadPiece(DownloadPieceRequest) returns (DownloadPieceResponse);
+}

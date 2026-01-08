@@ -1,33 +1,24 @@
-- Dependencias del sistema para distribuciones de debian
-sudo apt update
-sudo apt install -y python3 python3-venv python3-pip python3-full git
+Para compilar este proyecto:
 
-- Creación de archivos tipo torrent
-python make_torrent.py <IP_TRACKER> <PUERTO_TRACKER> <NOMBRE_ARCHIVO>
+1. Estando en la carpeta del proyecto crea el entorno virtual
+    Eliminar todo entorno virtual : rm -rf venv
+    python3 -m venv venv
 
-- Crear entorno virtual he instalar depencias en python
-cd proyectoFinal
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install grpcio grpcio-tools
+2. Activa el entorno virtual
+    source venv/bin/activate
 
-Para verificar: python -c "import grpc, grpc_tools; print('OK: grpc instalado')"
+3. Dentro del entorno virtual
+ - Instala gRPC
+    pip install --upgrade pip
+    pip install grpcio grpcio-tools
 
-- Generar código gRPC a partir de los proto (stubs)
-python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/tracker.proto
-python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/peer.proto
+ - Genera los stubs cada que cambies los .proto
+    Tracker: python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. tracker.proto
+    Peer: python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. peer.proto
 
-Para verificar: ls -1 | egrep "tracker_pb2|tracker_pb2_grpc|peer_pb2|peer_pb2_grpc"
+4. Corre el tracker (siempre dentro del venv)
+    python tracker_server.py [IP_TRACKER] [PUERTO]
 
-- Para correr el programa
-  
-  Tracker
-  cd proyectoFinal
-  source .venv/bin/activate
-  python tracker_server.py
+5. Correr el peer
+    python3 peer_node.py [IP_TRACKER] [PUERTO_TRACKER] [PUERTO_PEER]
 
-  Peer
-  cd proyectoFinal
-  source .venv/bin/activate
-  python peer.py --bind 0.0.0.0:6001
